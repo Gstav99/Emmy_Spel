@@ -28,7 +28,5 @@ namespace EmmySpel
         }
 
         public Rectangle GetBounds() => new Rectangle(position.ToPoint(), size);
-
-        public bool Intersects(IPhysical other) => GetBounds().Intersects(other.GetBounds());
     }
 }
