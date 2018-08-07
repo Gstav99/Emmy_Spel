@@ -1,10 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace EmmySpel
 {
-    class Player
+    class Player : IPhysical
     {
         private Texture2D texture;
         private Vector2 position;
@@ -17,7 +18,7 @@ namespace EmmySpel
             this.speed = speed;
         }
 
-        public void Update(GameTime gameTime, GameWindow window)
+        public void Update(GameTime gameTime, GameWindow window, IPhysical[] otherObjects)
         {
             var keyState = Keyboard.GetState();
 
@@ -59,11 +60,32 @@ namespace EmmySpel
             {
                 position.Y = window.ClientBounds.Height - texture.Height;
             }
+
+            foreach(var physicalObject in otherObjects)
+            {
+                if (Intersects(physicalObject))
+                {
+                    var otherBounds = physicalObject.GetBounds();
+                    var overlap = Rectangle.Intersect(GetBounds(), otherBounds);
+                    if (overlap.Width < overlap.Height)
+                    {
+                        position.X += overlap.X > otherBounds.Center.X ? overlap.Width : -overlap.Width;
+                    }
+                    else
+                    {
+                        position.Y += overlap.Y > otherBounds.Center.Y ? overlap.Height : -overlap.Height;
+                    }
+                }
+            }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, new Rectangle(position.ToPoint(), new Point(texture.Width, texture.Height)), Color.White);
+            spriteBatch.Draw(texture, position, Color.White);
         }
+
+        public Rectangle GetBounds() => new Rectangle(position.ToPoint(), texture.Bounds.Size);
+
+        public bool Intersects(IPhysical other) => GetBounds().Intersects(other.GetBounds());
     }
 }

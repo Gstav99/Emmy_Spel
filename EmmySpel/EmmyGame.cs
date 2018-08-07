@@ -13,6 +13,7 @@ namespace EmmySpel
         SpriteBatch spriteBatch;
         Player player;
         SpriteFont font;
+        Terrain terrain;
         
         public EmmyGame()
         {
@@ -48,7 +49,10 @@ namespace EmmySpel
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            player = new Player(Content.Load<Texture2D>("texture"), Vector2.Zero, 400);
+            Texture2D playerTexture = Content.Load<Texture2D>("playerTexture");
+            Texture2D terrainTexture = Content.Load<Texture2D>("terrainTexture");
+            player = new Player(playerTexture, Vector2.Zero, 400);
+            terrain = new Terrain(terrainTexture, new Point(100), new Point(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2).ToVector2());
             font = Content.Load<SpriteFont>("font");
         }
 
@@ -73,7 +77,8 @@ namespace EmmySpel
 
             // TODO: Add your update logic here
 
-            player.Update(gameTime, Window);
+            player.Update(gameTime, Window, new IPhysical[1] { terrain });
+            terrain.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -89,9 +94,15 @@ namespace EmmySpel
             // TODO: Add your drawing code here
 
             spriteBatch.Begin();
+            //Background
 
+            //Objects
+            terrain.Draw(spriteBatch);
+
+            //Characters
             player.Draw(spriteBatch);
 
+            //UI
             spriteBatch.DrawString(font, "Fps:" + System.Math.Floor(1 / gameTime.ElapsedGameTime.TotalSeconds).ToString(), Vector2.Zero, Color.White);
 
             spriteBatch.End();
