@@ -7,12 +7,14 @@ namespace EmmySpel
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game1 : Game
+    public class EmmyGame : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        Player player;
+        SpriteFont font;
         
-        public Game1()
+        public EmmyGame()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -28,6 +30,11 @@ namespace EmmySpel
         {
             // TODO: Add your initialization logic here
 
+            IsFixedTimeStep = false;
+            graphics.SynchronizeWithVerticalRetrace = false;
+            graphics.ApplyChanges();
+            TargetElapsedTime = new System.TimeSpan(1);
+
             base.Initialize();
         }
 
@@ -41,6 +48,8 @@ namespace EmmySpel
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            player = new Player(Content.Load<Texture2D>("texture"), Vector2.Zero, 400);
+            font = Content.Load<SpriteFont>("font");
         }
 
         /// <summary>
@@ -64,6 +73,8 @@ namespace EmmySpel
 
             // TODO: Add your update logic here
 
+            player.Update(gameTime, Window);
+
             base.Update(gameTime);
         }
 
@@ -76,6 +87,14 @@ namespace EmmySpel
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+
+            spriteBatch.Begin();
+
+            player.Draw(spriteBatch);
+
+            spriteBatch.DrawString(font, "Fps:" + System.Math.Floor(1 / gameTime.ElapsedGameTime.TotalSeconds).ToString(), Vector2.Zero, Color.White);
+
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
