@@ -42,6 +42,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Bullet.cs" />
     <Compile Include="EmmyGame.cs" />
     <Compile Include="IPhysical.cs" />
     <Compile Include="Player.cs" />

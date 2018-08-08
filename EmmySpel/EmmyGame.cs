@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace EmmySpel
 {
@@ -32,9 +33,6 @@ namespace EmmySpel
             // TODO: Add your initialization logic here
 
             IsFixedTimeStep = false;
-            graphics.SynchronizeWithVerticalRetrace = false;
-            graphics.ApplyChanges();
-            TargetElapsedTime = new System.TimeSpan(1);
 
             base.Initialize();
         }
@@ -51,7 +49,8 @@ namespace EmmySpel
             // TODO: use this.Content to load your game content here
             Texture2D playerTexture = Content.Load<Texture2D>("playerTexture");
             Texture2D terrainTexture = Content.Load<Texture2D>("terrainTexture");
-            player = new Player(playerTexture, Vector2.Zero, 400);
+            Texture2D bulletTexture = Content.Load<Texture2D>("bulletTexture");
+            player = new Player(playerTexture, Vector2.Zero, 400, 1000, new TimeSpan(1_000_000), bulletTexture, new Point(10));
             terrain = new Terrain(terrainTexture, new Point(100), new Point(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2).ToVector2());
             font = Content.Load<SpriteFont>("font");
         }
