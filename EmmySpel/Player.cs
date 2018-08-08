@@ -18,40 +18,26 @@ namespace EmmySpel
         /// </summary>
         private float speed;
         private BulletHandler bulletHandler;
+        public InputMode InputMode { get; set; }
 
-        public Player(Texture2D texture, Vector2 position, float speed, float bulletSpeed, TimeSpan shootingCooldown, Texture2D bulletTexture, Point bulletSize)
+        public Player(Texture2D texture, Vector2 position, float speed, float bulletSpeed, TimeSpan shootingCooldown, Texture2D bulletTexture, Point bulletSize, InputMode inputMode)
         {
             this.texture = texture;
             this.position = position;
             this.speed = speed;
+            InputMode = inputMode;
             bulletHandler = new BulletHandler(bulletSpeed, shootingCooldown, bulletTexture, bulletSize);
         }
 
         public void Update(GameTime gameTime, GameWindow window, IPhysical[] otherObjects)
         {
             var keyState = Keyboard.GetState();
+            var gamepadState = GamePad.GetState(PlayerIndex.One);
 
-            Vector2 movement = Vector2.Zero;
+            Vector2 movementDirection = GetMovementDirection();
 
-            if (keyState.IsKeyDown(Keys.W))
-            {
-                movement.Y -= speed;
-            }
-            if (keyState.IsKeyDown(Keys.S))
-            {
-                movement.Y += speed;
-            }
-            if (keyState.IsKeyDown(Keys.A))
-            {
-                movement.X -= speed;
-            }
-            if (keyState.IsKeyDown(Keys.D))
-            {
-                movement.X += speed;
-            }
-            movement *= (float)gameTime.ElapsedGameTime.TotalSeconds; //because speed is measured in pixels per second we need to apply how much time has passed
-
-            position += movement; //move the player
+            //because speed is measured in pixels per second we need to apply how much time has passed
+            position += movementDirection * speed * (float)gameTime.ElapsedGameTime.TotalSeconds; 
 
             //Check so that the player is within the screen
             if (position.X < 0)
@@ -92,18 +78,66 @@ namespace EmmySpel
             }
 
             //Update the bullets and shooting
-            if (keyState.IsKeyDown(Keys.Space))
+            if (InputMode == InputMode.KeyBoard ? keyState.IsKeyDown(Keys.Space) : gamepadState.IsButtonDown(Buttons.X))
             {
-                var bulletDirection = new Vector2(Math.Sign(movement.X), Math.Sign(movement.Y));
-                if(bulletDirection.X == 0 && bulletDirection.Y == 0)
-                {
-                    bulletDirection.X = 1;
-                }
-
-                bulletHandler.Shoot(gameTime, new Vector2(position.X + (texture.Width / 2), position.Y + (texture.Height / 2)), bulletDirection);
+                //TODO: fix so that the bullet direction is a fixed length so that all the bullets fly eqauly as fast aka so that the length is 1
+                //think enhetscrikeln
+                //basic ass trigonometri
+                bulletHandler.Shoot(gameTime, 
+                    new Vector2(position.X + (texture.Width / 2), 
+                    position.Y + (texture.Height / 2)), 
+                    (movementDirection.X == 0 && movementDirection.Y == 0) ? Vector2.UnitX : movementDirection); //if the player isn't moving just shoot right i don't know
             }
 
             bulletHandler.Update(gameTime, window);
+        }
+
+        private Vector2 GetMovementDirection()
+        {
+            switch (InputMode)
+            {
+                case InputMode.KeyBoard:
+                    return GetKeyBoardDirection();
+
+                case InputMode.Gamepad:
+                    return GetGamepadDirection();
+
+                default:
+                    throw new ArgumentException("unkown input mode");
+            }
+        }
+
+        private Vector2 GetGamepadDirection()
+        {
+            var gamepadState = GamePad.GetState(PlayerIndex.One);
+            var direction = gamepadState.ThumbSticks.Left;
+            direction.Y = -direction.Y;
+            return direction;
+        }
+
+        private Vector2 GetKeyBoardDirection()
+        {
+            KeyboardState keyState = Keyboard.GetState();
+
+            Vector2 movement = Vector2.Zero;
+
+            if (keyState.IsKeyDown(Keys.W))
+            {
+                movement.Y -= 1;
+            }
+            if (keyState.IsKeyDown(Keys.S))
+            {
+                movement.Y += 1;
+            }
+            if (keyState.IsKeyDown(Keys.A))
+            {
+                movement.X -= 1;
+            }
+            if (keyState.IsKeyDown(Keys.D))
+            {
+                movement.X += 1;
+            }
+            return movement;
         }
 
         public void Draw(SpriteBatch spriteBatch)

@@ -50,7 +50,7 @@ namespace EmmySpel
             Texture2D playerTexture = Content.Load<Texture2D>("playerTexture");
             Texture2D terrainTexture = Content.Load<Texture2D>("terrainTexture");
             Texture2D bulletTexture = Content.Load<Texture2D>("bulletTexture");
-            player = new Player(playerTexture, Vector2.Zero, 400, 1000, new TimeSpan(1_000_000), bulletTexture, new Point(10));
+            player = new Player(playerTexture, Vector2.Zero, 400, 1000, new TimeSpan(1_000_000), bulletTexture, new Point(10), InputMode.Gamepad);
             terrain = new Terrain(terrainTexture, new Point(100), new Point(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2).ToVector2());
             font = Content.Load<SpriteFont>("font");
         }
