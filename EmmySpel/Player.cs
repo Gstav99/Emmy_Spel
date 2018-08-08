@@ -17,28 +17,14 @@ namespace EmmySpel
         /// Speed in pixels per second
         /// </summary>
         private float speed;
-        private float bulletSpeed;
-        private TimeSpan lastBulletShot;
-        /// <summary>
-        /// Is a double since TimeSpan uses doubles and not floats
-        /// </summary>
-        private TimeSpan shootingCooldown;
-        private Texture2D bulletTexture;
-        private Point bulletSize;
-
-        private List<Bullet> bullets;
+        private BulletHandler bulletHandler;
 
         public Player(Texture2D texture, Vector2 position, float speed, float bulletSpeed, TimeSpan shootingCooldown, Texture2D bulletTexture, Point bulletSize)
         {
             this.texture = texture;
             this.position = position;
             this.speed = speed;
-            this.bulletSpeed = bulletSpeed;
-            this.shootingCooldown = shootingCooldown;
-            this.bulletTexture = bulletTexture;
-            this.bulletSize = bulletSize;
-            lastBulletShot = new TimeSpan(0);
-            bullets = new List<Bullet>();
+            bulletHandler = new BulletHandler(bulletSpeed, shootingCooldown, bulletTexture, bulletSize);
         }
 
         public void Update(GameTime gameTime, GameWindow window, IPhysical[] otherObjects)
@@ -106,32 +92,24 @@ namespace EmmySpel
             }
 
             //Update the bullets and shooting
-            if (keyState.IsKeyDown(Keys.Space) && gameTime.TotalGameTime - lastBulletShot >= shootingCooldown)
+            if (keyState.IsKeyDown(Keys.Space))
             {
-                var bulletVelocity = new Vector2(Math.Sign(movement.X) * bulletSpeed, Math.Sign(movement.Y) * bulletSpeed);
-                if(bulletVelocity.X == 0 && bulletVelocity.Y == 0)
+                var bulletDirection = new Vector2(Math.Sign(movement.X), Math.Sign(movement.Y));
+                if(bulletDirection.X == 0 && bulletDirection.Y == 0)
                 {
-                    bulletVelocity.X = 1 * bulletSpeed;
+                    bulletDirection.X = 1;
                 }
 
-                bullets.Add(new Bullet(bulletTexture, new Vector2(position.X + (texture.Width / 2), position.Y + (texture.Height / 2)), bulletVelocity, bulletSize));
-                  lastBulletShot = gameTime.TotalGameTime;
+                bulletHandler.Shoot(gameTime, new Vector2(position.X + (texture.Width / 2), position.Y + (texture.Height / 2)), bulletDirection);
             }
 
-            foreach(var bullet in bullets)
-            {
-                 bullet.Update(gameTime, window);
-            }
-            bullets.RemoveAll(b => !b.Enabled);
+            bulletHandler.Update(gameTime, window);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(texture, position, Color.White);
-            foreach(Bullet bullet in bullets)
-            {
-                bullet.Draw(spriteBatch);
-            }
+            bulletHandler.Draw(spriteBatch);
         }
 
         public Rectangle GetBounds() => new Rectangle(position.ToPoint(), texture.Bounds.Size);
