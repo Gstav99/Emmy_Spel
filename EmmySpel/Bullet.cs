@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace EmmySpel
 {
-    class Bullet
+    public class Bullet : IPhysical
     {
         private Texture2D texture;
         private Vector2 position;
@@ -47,5 +47,7 @@ namespace EmmySpel
                 spriteBatch.Draw(texture, new Rectangle(position.ToPoint(), size), Color.White);
             }
         }
+
+        public Rectangle GetBounds() => new Rectangle(position.ToPoint(), size);
     }
 }

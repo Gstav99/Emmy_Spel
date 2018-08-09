@@ -2,7 +2,7 @@
 
 namespace EmmySpel
 {
-    interface IPhysical
+    public interface IPhysical
     {
         Rectangle GetBounds();
     }

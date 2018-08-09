@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Bullet.cs" />
     <Compile Include="BulletHandler.cs" />
+    <Compile Include="BulletHitArgs.cs" />
     <Compile Include="EmmyGame.cs" />
     <Compile Include="InputMode.cs" />
     <Compile Include="IPhysical.cs" />

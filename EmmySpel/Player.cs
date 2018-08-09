@@ -18,7 +18,13 @@ namespace EmmySpel
         /// </summary>
         private float speed;
         private BulletHandler bulletHandler;
+        /// <summary>
+        /// In the case where the player isn't moving the player keeps shooting in the same direction as the last time
+        /// </summary>
+        private Vector2 lastBulletDirection;
+
         public InputMode InputMode { get; set; }
+
 
         public Player(Texture2D texture, Vector2 position, float speed, float bulletSpeed, TimeSpan shootingCooldown, Texture2D bulletTexture, Point bulletSize, InputMode inputMode)
         {
@@ -80,16 +86,32 @@ namespace EmmySpel
             //Update the bullets and shooting
             if (InputMode == InputMode.KeyBoard ? keyState.IsKeyDown(Keys.Space) : gamepadState.IsButtonDown(Buttons.X))
             {
-                //TODO: fix so that the bullet direction is a fixed length so that all the bullets fly eqauly as fast aka so that the length is 1
-                //think enhetscrikeln
-                //basic ass trigonometri
-                bulletHandler.Shoot(gameTime, 
-                    new Vector2(position.X + (texture.Width / 2), 
-                    position.Y + (texture.Height / 2)), 
-                    (movementDirection.X == 0 && movementDirection.Y == 0) ? Vector2.UnitX : movementDirection); //if the player isn't moving just shoot right i don't know
+                Vector2 bulletDirection = movementDirection;
+
+                //this wholse section is to make sure that the bullet fly in a consistent speed
+                if (bulletDirection.Length() < 1 && (bulletDirection.X != 0 || bulletDirection.Y != 0))
+                {
+                    float xPow = bulletDirection.X * bulletDirection.X;
+                    float yPow = bulletDirection.Y * bulletDirection.Y;
+                    float scalar = 1 / (xPow + yPow);
+                    float x = (float)Math.Sqrt(xPow * scalar) * Math.Sign(bulletDirection.X);
+                    float y = (float)Math.Sqrt(yPow * scalar) * Math.Sign(bulletDirection.Y);
+                    bulletDirection.X = x;
+                    bulletDirection.Y = y;
+                    System.Diagnostics.Debug.WriteLineIf(bulletDirection.Length() < 0.999, $"Warning! bullet speed lower than intended: {bulletDirection.Length()}");
+                }
+
+                if (bulletDirection.Length() == 0)
+                {
+                    bulletDirection = lastBulletDirection;
+                }
+
+                bulletHandler.Shoot(gameTime, new Vector2(position.X + (texture.Width / 2), position.Y + (texture.Height / 2)), bulletDirection);
+
+                lastBulletDirection = bulletDirection;
             }
 
-            bulletHandler.Update(gameTime, window);
+            bulletHandler.Update(gameTime, window, otherObjects);
         }
 
         private Vector2 GetMovementDirection()

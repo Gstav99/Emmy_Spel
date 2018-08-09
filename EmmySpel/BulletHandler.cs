@@ -18,6 +18,8 @@ namespace EmmySpel
         private Point bulletSize;
         private List<Bullet> bullets;
 
+        public event EventHandler<BulletHitArgs> Bullethit = delegate { };
+
         public BulletHandler(float bulletSpeed, TimeSpan shootingCooldown, Texture2D bulletTexture, Point bulletSize)
         {
             this.bulletSpeed = bulletSpeed;
@@ -29,11 +31,18 @@ namespace EmmySpel
             bullets = new List<Bullet>();
         }
 
-        public void Update(GameTime gameTime, GameWindow window)
+        public void Update(GameTime gameTime, GameWindow window, IPhysical[] otherObjects)
         {
             foreach (var bullet in bullets)
             {
                 bullet.Update(gameTime, window);
+                foreach(var gameObject in otherObjects)
+                {
+                    if (bullet.GetBounds().Intersects(gameObject.GetBounds()))
+                    {
+                        Bullethit.Invoke(this, new BulletHitArgs(bullet, gameObject));
+                    }
+                }
             }
             bullets.RemoveAll(b => !b.Enabled);
         }
