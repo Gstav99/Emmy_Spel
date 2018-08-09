@@ -23,7 +23,7 @@ namespace EmmySpel
         /// </summary>
         private Vector2 lastBulletDirection;
 
-        public InputMode InputMode { get; set; }
+        private InputManager inputManager;
 
 
         public Player(Texture2D texture, Vector2 position, float speed, float bulletSpeed, TimeSpan shootingCooldown, Texture2D bulletTexture, Point bulletSize, InputMode inputMode)
@@ -31,8 +31,8 @@ namespace EmmySpel
             this.texture = texture;
             this.position = position;
             this.speed = speed;
-            InputMode = inputMode;
             bulletHandler = new BulletHandler(bulletSpeed, shootingCooldown, bulletTexture, bulletSize);
+            inputManager = new InputManager(inputMode);
         }
 
         public void Update(GameTime gameTime, GameWindow window, IPhysical[] otherObjects)
@@ -40,7 +40,7 @@ namespace EmmySpel
             var keyState = Keyboard.GetState();
             var gamepadState = GamePad.GetState(PlayerIndex.One);
 
-            Vector2 movementDirection = GetMovementDirection();
+            Vector2 movementDirection = inputManager.GetMovementDirection();
 
             //because speed is measured in pixels per second we need to apply how much time has passed
             position += movementDirection * speed * (float)gameTime.ElapsedGameTime.TotalSeconds; 
@@ -84,23 +84,35 @@ namespace EmmySpel
             }
 
             //Update the bullets and shooting
-            if (InputMode == InputMode.KeyBoard ? keyState.IsKeyDown(Keys.Space) : gamepadState.IsButtonDown(Buttons.X))
+            if (inputManager.IsKeyDown(Keys.Space, Buttons.X))
             {
                 Vector2 bulletDirection = movementDirection;
 
                 //this wholse section is to make sure that the bullet fly in a consistent speed
+                //ekvation time!
+                //så längden/hypotenusan på vektoren ska vara 1
+                //alltså x^2 + y^2 = c^2 = 1 där c är hypotenusan
+                //om den är lägre än 1 behöver vi multiplicera den med ett tal så att den blir ett
+                //kan kalla det talet a
+                //det ger 1 = a * c^2 = a * (x^2 + y^2)
+                //vi vet vad x och y är
+                //det ger
+                //1 / (x^2 + y^2) = a
                 if (bulletDirection.Length() < 1 && (bulletDirection.X != 0 || bulletDirection.Y != 0))
                 {
-                    float xPow = bulletDirection.X * bulletDirection.X;
+                    float xPow = bulletDirection.X * bulletDirection.X; //sparar värderna direkt så att vi slipper göra denna utäkning flera gånger
                     float yPow = bulletDirection.Y * bulletDirection.Y;
-                    float scalar = 1 / (xPow + yPow);
-                    float x = (float)Math.Sqrt(xPow * scalar) * Math.Sign(bulletDirection.X);
+                    float scalar = 1 / (xPow + yPow); //räkna ut talet
+                    float x = (float)Math.Sqrt(xPow * scalar) * Math.Sign(bulletDirection.X); //räkna ut x och y samt bibehåll rikting då xPow oxh yPow alltid är positiva
                     float y = (float)Math.Sqrt(yPow * scalar) * Math.Sign(bulletDirection.Y);
-                    bulletDirection.X = x;
+                    bulletDirection.X = x; //updatera bulletDirection
                     bulletDirection.Y = y;
+                    //Det här är bara så att vi vet om någonting går fel
+                    //Det skrivs ut till output delen av visual studio
                     System.Diagnostics.Debug.WriteLineIf(bulletDirection.Length() < 0.999, $"Warning! bullet speed lower than intended: {bulletDirection.Length()}");
                 }
 
+                //if the player isn't moving just shoot the same direction as the last time they shot
                 if (bulletDirection.Length() == 0)
                 {
                     bulletDirection = lastBulletDirection;
@@ -112,54 +124,6 @@ namespace EmmySpel
             }
 
             bulletHandler.Update(gameTime, window, otherObjects);
-        }
-
-        private Vector2 GetMovementDirection()
-        {
-            switch (InputMode)
-            {
-                case InputMode.KeyBoard:
-                    return GetKeyBoardDirection();
-
-                case InputMode.Gamepad:
-                    return GetGamepadDirection();
-
-                default:
-                    throw new ArgumentException("unkown input mode");
-            }
-        }
-
-        private Vector2 GetGamepadDirection()
-        {
-            var gamepadState = GamePad.GetState(PlayerIndex.One);
-            var direction = gamepadState.ThumbSticks.Left;
-            direction.Y = -direction.Y;
-            return direction;
-        }
-
-        private Vector2 GetKeyBoardDirection()
-        {
-            KeyboardState keyState = Keyboard.GetState();
-
-            Vector2 movement = Vector2.Zero;
-
-            if (keyState.IsKeyDown(Keys.W))
-            {
-                movement.Y -= 1;
-            }
-            if (keyState.IsKeyDown(Keys.S))
-            {
-                movement.Y += 1;
-            }
-            if (keyState.IsKeyDown(Keys.A))
-            {
-                movement.X -= 1;
-            }
-            if (keyState.IsKeyDown(Keys.D))
-            {
-                movement.X += 1;
-            }
-            return movement;
         }
 
         public void Draw(SpriteBatch spriteBatch)

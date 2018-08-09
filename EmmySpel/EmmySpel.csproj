@@ -46,6 +46,7 @@
     <Compile Include="BulletHandler.cs" />
     <Compile Include="BulletHitArgs.cs" />
     <Compile Include="EmmyGame.cs" />
+    <Compile Include="InputManager.cs" />
     <Compile Include="InputMode.cs" />
     <Compile Include="IPhysical.cs" />
     <Compile Include="Player.cs" />
