@@ -102,7 +102,7 @@ namespace EmmySpel
             player.Draw(spriteBatch);
 
             //UI
-            spriteBatch.DrawString(font, "Fps:" + System.Math.Floor(1 / gameTime.ElapsedGameTime.TotalSeconds).ToString(), Vector2.Zero, Color.White);
+            spriteBatch.DrawString(font, "Fps:" + Math.Floor(1 / gameTime.ElapsedGameTime.TotalSeconds).ToString(), Vector2.Zero, Color.White);
 
             spriteBatch.End();
 

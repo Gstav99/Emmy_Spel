@@ -109,6 +109,7 @@ namespace EmmySpel
                     bulletDirection.Y = y;
                     //Det här är bara så att vi vet om någonting går fel
                     //Det skrivs ut till output delen av visual studio
+                    //Ibland är längedn inte exakt 1 heller pga float aretmetik så därför kollar vi för värdet 0.999
                     System.Diagnostics.Debug.WriteLineIf(bulletDirection.Length() < 0.999, $"Warning! bullet speed lower than intended: {bulletDirection.Length()}");
                 }
 
